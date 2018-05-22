@@ -1,0 +1,73 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="DataTables/datatables.min.css"/>
+ 
+<script type="text/javascript" src="DataTables/datatables.js"></script>
+</head>
+
+<h2>Data Object Service Browser</h2>
+
+<input type="text" id="url" value="https://5ybh0f5iai.execute-api.us-west-2.amazonaws.com/api/ga4gh/dos/v1/dataobjects/list"/>
+<button id="go">GOO</button>
+
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12">
+      <table id="example" summary="This table shows how to create responsive tables using Datatables' extended functionality" class="table table-bordered table-hover dt-responsive">
+        <thead>
+          <tr>
+            <th>data_object.id</th>
+            <th>name</th>
+            <th>size</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<p class="p">Demo by George Martsoukos. <a href="http://www.sitepoint.com/responsive-data-tables-comprehensive-list-solutions" target="_blank">See article</a>.</p>
+
+<script>
+//http://ec2-52-26-45-130.us-west-2.compute.amazonaws.com:8080/ga4gh/dos/v1/dataobjects/list
+
+$('#go').click(function() {
+    var table = $('#example').DataTable({
+        "serverSide": true,
+        "ajax": {
+            "url": $("#url").val(),
+            "type": "POST",
+            "dataSrc": "data_objects",
+            "dataType": "json",
+            "contentType": "application/json",
+            "data": function ( d ) {
+                var tt = $('#example').DataTable()
+                var info = tt.page.info();
+                console.log(info);
+                if (tt.ajax.json() && tt.ajax.json().next_page_token) {
+                console.log(tt.ajax.json().next_page_token)
+                  return JSON.stringify(
+                    {"page_size": info.page.length, "page_token" : tt.ajax.json().next_page_token});
+                } else {
+                  return JSON.stringify(
+                    {"page_size": info.page.length, "page_token" : "0"});
+                }
+            }
+        },
+        "columns": [
+            {"data": "id"},
+            {"data": "name", "defaultContent": ""},
+            {"data": "size"}
+        ]
+    } );
+    $('#example').on('page.dt', function () {
+        var info = table.page.info();
+        console.log('Showing page: '+info.page+' of '+info.pages );
+    });
+});
+</script>
